@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "agentic-rag"
+version = "0.1.0"
+description = ""
+authors = ["Nicolas Alvarez P <nicolas.alvarez.p6@hotmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+python-dotenv = "^1.0.1"
+ipykernel = "^6.29.5"
+llama-index = "^0.10.59"
+nest-asyncio = "^1.6.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
