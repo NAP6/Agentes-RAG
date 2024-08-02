@@ -64,3 +64,34 @@ permitiéndole a este, entregar a la herramienta los parametros que le sean nece
 para poder ejecutarse.
 3. Y por último como hacer que estos **Agentes RAG tengan capacidades de razonamiento de 
 varios pasos** asi como el permitirles trabajar con varios documentos.
+
+## Principales frameworks para trabajar con LLMs: LlamaIndex y LangChain
+
+El uso y popularidad de los grandes modelos generativos se ha acrecentado en los últimos
+años, y con ello la necesidad de herramientas que permitan trabajar con estos modelos de
+manera eficiente. Dos de los frameworks más populares que han surgido para trabajar con 
+LLMs son **LlamaIndex** y **LangChain**.
+
+### LlamaIndex
+
+**LlamaIndex** desde sus inicios y hasta ahora se ha especializado en la busqueda y
+recuperacion de información. La mayor potencia de LlamaIndex radica en su capacidad
+para indexar y recuperar datos de manera rapida y precisa; ademas de esto, es una 
+herramienta que se permite en construir sistemas de manera rapida y sencilla.
+
+Su estructura y enfoque, convierten a  LlamaIndex en una herramienta ideal para la
+construccion de sistemas RAG. Sin embargo sus capacidades siguen en evolucion
+constante, y ya se encuentra la posibilidad de construir sistemas cada vez mas 
+complejos y robustos.
+
+### LangChain
+
+**LangChain** por otro lado, se ha centrado en la flexibilidad y modularidad, y ha
+sido diseñado para construir aplicaciones mucho más complejas utilizando LLMs.
+
+### Diferencias clave
+
+- **Enfoque:** **LlamaIndex** se especializa en la recuperacion de informacion y su 
+integracion con LLMs, mientras que **LangChain** se enfoca en la construccion de 
+aplicaciones complejas.
+
