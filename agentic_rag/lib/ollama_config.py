@@ -1,7 +1,7 @@
 from llama_index.core import ServiceContext, set_global_service_context
 from llama_index.llms.ollama import Ollama
 from llama_index.embeddings.langchain import LangchainEmbedding
-from agentic_rag.lib.OllamaEmbeddings import OllamaEmbeddings
+from lib.OllamaEmbeddings import OllamaEmbeddings
 
 
 _llm = Ollama(base_url="http://192.168.1.174:11434/", model='llama3.1')
