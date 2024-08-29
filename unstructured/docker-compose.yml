@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  unstructured:
+    image: nap6/unstructured:latest
+    container_name: unstructured
+    ports:
+      - "8881:8888"
+    volumes:
+      - ./project:/project
+
+volumes:
+  postgres_data:
+    driver: local
