@@ -1,3 +1,9 @@
 .idea
 venv/**/*
+.venv/**/*
 .env
+GCP-Credentials/**/*
+
+__pycache__/
+
+**/__pycache__/
