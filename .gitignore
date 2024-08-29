@@ -3,6 +3,7 @@ venv/**/*
 .venv/**/*
 .env
 GCP-Credentials/**/*
+**/.ipynb_checkpoints/
 
 __pycache__/
 
