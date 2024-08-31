@@ -1,4 +1,6 @@
 TEMPLATE = """
+Your role is to generate JSON output and nothing else. You should only return JSON in your response.
+
 Review the previously classified text block:
 <Text_to_evaluate description="This is the IMPORTANT text block that needs to be evaluated and classified.">
     {text_to_evaluate}
