@@ -1,1 +1,1 @@
-from GCP_Model import GCP_Model
+from .GCP_Model import GCP_Model

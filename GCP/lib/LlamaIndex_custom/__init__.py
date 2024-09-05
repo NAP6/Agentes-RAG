@@ -1,1 +1,1 @@
-from VertexIEmbeddings import VertexIEmbeddings
+from .VertexIEmbeddings import VertexIEmbeddings

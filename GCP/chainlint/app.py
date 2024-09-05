@@ -5,6 +5,7 @@ from llama_index.core import (
     StorageContext,
     load_index_from_storage,
 )
+from llama_index.core.chat_engine.types import ChatMode
 
 from llama_index.core.query_engine.retriever_query_engine import RetrieverQueryEngine
 from llama_index.core.callbacks import CallbackManager
@@ -23,7 +24,7 @@ index = load_index_from_storage(storage_context)
 
 @cl.on_chat_start
 async def start():
-    chat_engine = index.as_chat_engine(chat_mode="best", similarity_top_k=4, verbose=False)
+    chat_engine = index.as_chat_engine(chat_mode=ChatMode.REACT, similarity_top_k=4, verbose=False)
     cl.user_session.set("chat_engine", chat_engine)
 
     await cl.Message(
@@ -38,10 +39,14 @@ async def main(message: cl.Message):
     msg = cl.Message(content="", author="Assistant")
     await msg.send()
 
-    res = chat_engine.stream_chat(message.content)
-
-    for token in res.response_gen:
-        print(token)
-        await msg.stream_token(token)
-
+    res = chat_engine.chat(message.content)
+    msg.content = res.response
     await msg.update()
+
+
+    # res = chat_engine.stream_chat(message.content)
+    #
+    # for token in res.response_gen:
+    #     await msg.stream_token(token.response)
+    #
+    # await msg.update()

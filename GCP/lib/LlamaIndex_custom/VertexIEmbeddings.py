@@ -22,7 +22,6 @@ class VertexIEmbeddings(BaseEmbedding):
             credentials_path: Optional[str] = None,
             **kwargs: Any,
     ) -> None:
-
         if credentials_path:
             credentials: service_account.Credentials = (
                 service_account.Credentials.from_service_account_file(credentials_path)
