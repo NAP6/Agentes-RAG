@@ -18,7 +18,13 @@ services:
     ports:
       - "8881:8888"
     volumes:
-      - ./project:/project
+#      - ./project:/project
+      - C:\Agentes-RAG\src\Ingestion:/project
+      - C:\Agentes-RAG\src\data:/data
+      - C:\Agentes-RAG\GCP-Credentials:/GCP-Credentials
+    environment:
+      - GCP_CREDENTIALS_PATH=/GCP-Credentials/llms-433815-9ac19dff6be6.json
+      - SRC_DATA_PATH=/data
 
 volumes:
   postgres_data:
