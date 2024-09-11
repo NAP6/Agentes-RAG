@@ -1,0 +1,20 @@
+{
+  "title": "VOYAGER: An Open-Ended Embodied Agent with Large Language Models",
+  "authors": [
+    "Guanzhi Wang",
+    "Yuqi Xie",
+    "Yunfan Jiang",
+    "Ajay Mandlekar",
+    "Chaowei Xiao",
+    "Yuke Zhu",
+    "Linxi 'Jim' Fan"
+  ],
+  "research_lab": [
+    "NVIDIA",
+    "Caltech",
+    "UT Austin",
+    "Stanford",
+    "UW Madison"
+  ],
+  "publication_year": 2023
+}

@@ -13,8 +13,8 @@ from ..lib.library_custom.llama_index.Embedddings import VertexIEmbeddings
 
 @dataclass
 class _Config:
+    """Clase de configuración para la app."""
 
-    _gcp_credentials = None
     _llm: LLM = None
     _embed_model: BaseEmbedding = None
     _context_window: int = 1000000

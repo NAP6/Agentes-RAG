@@ -1,51 +1,188 @@
 import os
+from dataclasses import dataclass
 
-class Config:
+import vertexai
+from google.oauth2 import service_account
+from llama_index.core import Settings
+from llama_index.core.base.embeddings.base import BaseEmbedding
+from llama_index.core.llms import LLM
+from llama_index.llms.vertex import Vertex
+import logging
+import sys
+
+from lib.library_custom.llama_index.models import VertexIEmbeddings
+
+logger = logging.getLogger()
+
+@dataclass
+class _Config:
+    """Clase de configuración para la Ingesta."""
+
+    _llm: LLM = None
+    _embed_model: BaseEmbedding = None
+    _context_window: int = 1000000
+    _base_dir: str = None
+    _source_dir: str = 'raw_files'
+    _out_dir: str = 'nodes'
+    _images_dir: str = 'img'
+    _log_dir: str = 'logs'
+    _meta_dir: str = 'metadata'
+
     def __init__(self):
-        # Configurar rutas de directorios
-        self.base_dir = self.get_env_variable('SRC_DATA_PATH', '/')
-        self.source_dir = os.path.join(self.base_dir, "raw_files")
-        self.out_dir = os.path.join(self.base_dir, "nodes")
-        self.images_dir = os.path.join(self.base_dir, "img")
-        self.log_dir = os.path.join(self.base_dir, "logs")
-        self.meta_dir = os.path.join(self.base_dir, "metadata")
+        # Configurar el logger
+        self._setup_logger()
 
-        # Configurar otras variables específicas
-        self.llm_model = "gemini-1.5-pro-001"
-        self.gcp_credentials_path = self.get_env_variable('GCP_CREDENTIALS_PATH', None)
-
-        # Verificar que se haya definido la variable de entorno 'GCP_CREDENTIALS_PATH'
-        if self.gcp_credentials_path is None:
-            print("Error: No se ha definido la variable de entorno 'GCP_CREDENTIALS_PATH'.")
+        # Inicializar las credenciales de GCP
+        credentials_path = self._get_env_variable('GCP_CREDENTIALS_PATH')
+        if credentials_path is None:
             raise ValueError("No se ha definido la variable de entorno 'GCP_CREDENTIALS_PATH'.")
+        credentials: service_account.Credentials = (
+            service_account.Credentials.from_service_account_file(credentials_path)
+        )
+        vertexai.init(project=credentials.project_id, location='us-central1', credentials=credentials)
+        logger.info("Credenciales de GCP inicializadas.")
 
-        # Asegurar la existencia de directorios
-        self.ensure_directories_exist()
+        # Inicializar el modelo configuracion de Llama-Index
+        Settings.llm = self.llm
+        Settings.embed_model = self.embed_model
+        Settings.context_window = self.context_window
 
-        # Imprimir configuración
-        print("Configuración:")
-        print(f"  source_dir: {self.source_dir}")
-        print(f"  out_dir: {self.out_dir}")
-        print(f"  images_dir: {self.images_dir}")
-        print(f"  log_dir: {self.log_dir}")
-        print(f"  llm_model: {self.llm_model}")
-        print(f"  meta_dir: {self.meta_dir}")
 
-    def get_env_variable(self, var_name, default=None):
+    # --- LLM ---
+    @property
+    def llm(self):
+        """Getter para recuperar LLM."""
+        if self._llm is None:
+            self.set_gcp_llm_by_name("gemini-1.5-pro-001")
+        return self._llm
+
+    @llm.setter
+    def llm(self, llm: LLM):
+        """Setter para asignar el LLM."""
+        self._llm = llm
+        Settings.llm = llm
+        logger.info(f"LLM configurado: {llm.model}")
+
+    def set_gcp_llm_by_name(self, llm_name: str):
+        self.llm = Vertex(model=llm_name)
+
+
+    # ---- Embedding ----
+    @property
+    def embed_model(self) -> BaseEmbedding:
+        """Get the embedding model."""
+        if self._embed_model is None:
+            self.set_gcp_embed_model_name("text-embedding-004")
+        return self._embed_model
+
+    @embed_model.setter
+    def embed_model(self, embed_model: BaseEmbedding):
+        """Setter para asignar el modelo de Embeddings."""
+        self._embed_model = embed_model
+        Settings.embed_model = embed_model
+        logger.info(f"Modelo de Embeddings configurado: {embed_model.model_name}")
+
+    def set_gcp_embed_model_name(self, embed_model_name: str):
+        self.embed_model = VertexIEmbeddings(model_name = embed_model_name)
+
+    # ---- Context Window ----
+    @property
+    def context_window(self) -> int:
+        """Get the context window."""
+        return self._context_window
+
+    @context_window.setter
+    def context_window(self, context_window: int):
+        """Set the context window."""
+        self._context_window = context_window
+        Settings.context_window = context_window
+
+    # ---- Base Directory ----
+    @property
+    def base_dir(self) -> str:
+        """Get the base directory."""
+        if self._base_dir is None:
+            self._base_dir = self._get_env_variable('SRC_DATA_PATH')
+        os.makedirs(self._base_dir, exist_ok=True)
+        return self._base_dir
+
+    # ---- Source Directory ----
+    @property
+    def source_dir(self) -> str:
+        """Get the source directory."""
+        path = os.path.join(self.base_dir, self._source_dir)
+        os.makedirs(path, exist_ok=True)
+        return path
+
+    # ---- Output Directory ----
+    @property
+    def out_dir(self) -> str:
+        """Get the output directory."""
+        path = os.path.join(self.base_dir, self._out_dir)
+        os.makedirs(path, exist_ok=True)
+        return path
+
+    # ---- Images Directory ----
+    @property
+    def images_dir(self) -> str:
+        """Get the images directory."""
+        path = os.path.join(self.base_dir, self._images_dir)
+        os.makedirs(path, exist_ok=True)
+        return path
+
+    # ---- Log Directory ----
+    @property
+    def log_dir(self) -> str:
+        """Get the log directory."""
+        path = os.path.join(self.base_dir, self._log_dir)
+        os.makedirs(path, exist_ok=True)
+        return path
+
+    # ---- Metadata Directory ----
+    @property
+    def meta_dir(self) -> str:
+        """Get the metadata directory."""
+        path = os.path.join(self.base_dir, self._meta_dir)
+        os.makedirs(path, exist_ok=True)
+        return path
+
+    ########################################################
+
+    # ---- Get Enviroment Variable ----
+    def _get_env_variable(self, var_name):
         """Obtiene una variable de entorno y emite una advertencia si no está definida."""
         value = os.getenv(var_name)
         if value is None:
-            if default is None:
-                print(f"Advertencia: Variable de entorno '{var_name}' no está definida y no hay un valor por defecto.")
-            else:
-                print(f"Advertencia: Variable de entorno '{var_name}' no está definida. Usando valor por defecto: {default}")
-            return default
+            raise ValueError(f"Variable de entorno '{var_name}' no está definida.")
+        logger.info(f"Variable de entorno '{var_name}' recuperada.")
         return value
+    def _setup_logger(self):
+        """Configura el logger."""
+        # Configurar el nivel de logging del logger raíz
+        logger.setLevel(logging.INFO)
 
-    def ensure_directories_exist(self):
-        """Crea los directorios si no existen."""
-        os.makedirs(self.source_dir, exist_ok=True)
-        os.makedirs(self.out_dir, exist_ok=True)
-        os.makedirs(self.images_dir, exist_ok=True)
-        os.makedirs(self.log_dir, exist_ok=True)
-        os.makedirs(self.meta_dir, exist_ok=True)
+        # Crear handlers para registrar en la salida estándar y en un archivo
+        stdoutHandler = logging.StreamHandler(stream=sys.stdout)
+        errHandler = logging.FileHandler(os.path.join(self.log_dir, "error.log"))
+
+        # Establecer los niveles de log en los handlers
+        stdoutHandler.setLevel(logging.DEBUG)
+        errHandler.setLevel(logging.ERROR)
+
+        # Crear un formato de log usando atributos de Log Record
+        fmt = logging.Formatter(
+            "%(name)s: %(asctime)s | %(levelname)s | %(filename)s:%(lineno)s | %(process)d >>> %(message)s"
+        )
+
+        # Establecer el formato de log en cada handler
+        stdoutHandler.setFormatter(fmt)
+        errHandler.setFormatter(fmt)
+
+        # Añadir cada handler al objeto Logger
+        logger.addHandler(stdoutHandler)
+        logger.addHandler(errHandler)
+
+        return logger
+
+# Configuracion
+Config = _Config()

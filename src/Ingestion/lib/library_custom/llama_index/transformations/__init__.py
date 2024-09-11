@@ -1,3 +1,4 @@
 from .Unstructured_Medatata_PostProcessor import Unstructured_Medatata_PostProcessor
 from .Unstructured_SectionTitle_Metadata import Unstructured_SectionTitle_Metadata
 from .Unstructured_Filter import Unstructured_Filter
+from .DictionaryToMetadata import DictionaryToMetadata

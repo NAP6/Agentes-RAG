@@ -30,8 +30,10 @@ class Unstructured_Medatata_PostProcessor(TransformComponent):
         self.gcp_model = gcp_model
         self.meta_folder_path = meta_folder_path
         self.chain_evaluator = create_chain_evaluation(self.gcp_model)
+        logger.info("Unstructured_Medatata_PostProcessor initialized")
 
     def __call__(self, nodes: Sequence[BaseNode], **kwargs: Any) -> Sequence[BaseNode]:
+        logger.info("Processing nodes... (Unstructured_Medatata_PostProcessor)")
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = [executor.submit(self._reclasificar_bloque_con_reintentos, node, nodes) for node in nodes]
             new_nodes = [future.result() for future in concurrent.futures.as_completed(futures)]

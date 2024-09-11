@@ -1,84 +1,87 @@
+import logging
+import os
+import pickle
+
 from llama_index.core import Settings
-from llama_index.core.extractors import QuestionsAnsweredExtractor
+from llama_index.core.extractors import QuestionsAnsweredExtractor, KeywordExtractor, SummaryExtractor
 from llama_index.core.ingestion import IngestionPipeline
 from llama_index.core.node_parser import SemanticSplitterNodeParser
-from llama_index.llms.vertex import Vertex
 
-from lib.library_custom.llama_index import VertexIEmbeddings
 from lib.DirectoryLoader import Unstructured_UF_Loader
 from lib.Watcher import File2NodesWatcher
 from lib.library_custom.llama_index.transformations import Unstructured_Medatata_PostProcessor
 from lib.library_custom.llama_index.transformations import Unstructured_SectionTitle_Metadata
 from lib.library_custom.llama_index.transformations import Unstructured_Filter
+from lib.library_custom.llama_index.transformations import DictionaryToMetadata
 from lib.library_custom.langchain.models import GCP_Model
 
-from config import Config, setup_logger
+from config import Config
 
-# Cofiguracion
-config = Config()
+logger = logging.getLogger()
+logger.propagate = True
 
-# Set up the logger
-logger = setup_logger(config.log_dir)
-logger.info("Starting main.py")
+logger.info("Starting Ingestion")
 
 # Create a loader instance
-loader = Unstructured_UF_Loader(image_path_output=config.images_dir)
-
-# Create ingestion pipeline instance
-embedding = VertexIEmbeddings(credentials_path=config.gcp_credentials_path)
-Settings.llm = Vertex(model=config.llm_model)
-Settings.embed_model = embedding
+loader = Unstructured_UF_Loader(image_path_output=Config.images_dir)
+logger.info("Loader created")
 
 
-gcp_model = GCP_Model(model_name=config.llm_model, credentials_path=config.gcp_credentials_path)
-unstuc_meta_post_processor = Unstructured_Medatata_PostProcessor(
-    gcp_model=gcp_model,
-    meta_folder_path=config.meta_dir
-)
+# Create a GCP model instance this is an LLM for langchain
+gcp_model = GCP_Model(model_name=Config.llm.model)
+logger.info("GCP Model created")
 
-unstuc_section_title_as_metadata = Unstructured_SectionTitle_Metadata()
-
-unstuc_filter = Unstructured_Filter(filter_block_type=["UncategorizedText"])
-
-semantic_spliter = SemanticSplitterNodeParser(
-    buffer_size=1,
-    embed_model=embedding,
-    include_metadata=True,
-    include_prev_next_rel=True
-)
-
-qa_extractor = QuestionsAnsweredExtractor(questions=3)
-
+# Define the transformations
 transformation = [
-    unstuc_meta_post_processor,
-    unstuc_section_title_as_metadata,
-    unstuc_filter,
-    # json_to_metadata,
-    semantic_spliter,
-    # sumary_extractor, # Este debe ir antes o despues del semantic splitter?
-    qa_extractor,
-    embedding
+
+    Unstructured_Medatata_PostProcessor(
+        gcp_model=gcp_model,
+        meta_folder_path=Config.meta_dir
+    ),
+
+    Unstructured_SectionTitle_Metadata(),
+
+    Unstructured_Filter(filter_block_type=["UncategorizedText"]),
+
+    DictionaryToMetadata(meta_folder_path=Config.meta_dir),
+
+    # SemanticSplitterNodeParser( -- Tenemos que separar las tablas
+    #     buffer_size=1,
+    #     embed_model=Config.embed_model,
+    #     include_metadata=True,
+    #     include_prev_next_rel=True
+    # ),
+
+    # SummaryExtractor(llm=Config.llm), # No funciona
+
+    # KeywordExtractor(), # No funciona
+
+    # QuestionsAnsweredExtractor(questions=3), # No funciona
+
+    Config.embed_model
 ]
 
+# Create a pipeline instance
 pipeline = IngestionPipeline(transformations=transformation)
 
 # Create a watcher instance
-# watcher = File2NodesWatcher(
-#     watch_directory=config.source_dir,
-#     nodes_output_directory=config.out_dir,
-#     file_reader=loader
-# )
+watcher = File2NodesWatcher(
+    watch_directory=Config.source_dir,
+    nodes_output_directory=Config.out_dir,
+    file_reader=loader,
+    ingestion_pipeline=pipeline
+)
 # watcher.start_watch()
 
-
-import pickle
-import os
-
-with open(os.path.join(config.out_dir, 'Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks.temporal.pk'), 'rb') as file:
-    nodes = pickle.load(file)
-
-new_nodes = pipeline.run(nodes=nodes)
-
-
-with open(os.path.join(config.out_dir, 'Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks.temporal2.pk'), 'wb') as file:
-    pickle.dump(new_nodes, file)
+# file_name = 'Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks.pdf'
+# file_path = os.path.join(Config.source_dir, file_name)
+#
+# logger.info(f'Procesando archivo: {file_path}')
+# nodes = loader.load_from(files=[file_path])
+# logger.info('Ejecutando el pipeline de ingestión')
+# nodes = pipeline.run(documents=nodes)
+#
+# output_file_path = os.path.join(Config.out_dir, f'{file_name}.pk')
+# with open(output_file_path, 'wb') as file:
+#     pickle.dump(nodes, file)
+# logger.info(f'Nodos guardados en: {output_file_path}')
