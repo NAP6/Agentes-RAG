@@ -13,9 +13,17 @@ from llama_index.core.callbacks import CallbackManager
 from llama_index.llms.vertex import Vertex
 from VertexIEmbeddings import VertexIEmbeddings
 
-credentials_path = 'C:\\Agentes-RAG\\GCP-Credentials\\llms-433815-5e7ca2a0c045.json'
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+credentials_path = os.getenv('GCP_CREDENTIALS_PATH')
+if credentials_path is None:
+    raise ValueError("La variable de entorno 'GCP_CREDENTIALS_PATH' no está definida.")
+
 Settings.embed_model = VertexIEmbeddings(credentials_path=credentials_path)
-Settings.llm = Vertex(model="gemini-1.5-pro-001")
+Settings.llm = Vertex(model="gemini-1.5-pro")
 Settings.callback_manager = CallbackManager([cl.LlamaIndexCallbackHandler()])
 # Settings.context_window = 4096
 
