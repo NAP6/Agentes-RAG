@@ -45,12 +45,12 @@ transformation = [
 
     DictionaryToMetadata(meta_folder_path=Config.meta_dir),
 
-    # SemanticSplitterNodeParser( -- Tenemos que separar las tablas
-    #     buffer_size=1,
-    #     embed_model=Config.embed_model,
-    #     include_metadata=True,
-    #     include_prev_next_rel=True
-    # ),
+    SemanticSplitterNodeParser( # Tenemos que separar las tablas
+        buffer_size=1,
+        embed_model=Config.embed_model,
+        include_metadata=True,
+        include_prev_next_rel=True
+    ),
 
     # SummaryExtractor(llm=Config.llm), # No funciona
 

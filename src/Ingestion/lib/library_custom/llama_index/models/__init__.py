@@ -1,1 +1,0 @@
-from .VertexIEmbeddings import VertexIEmbeddings
