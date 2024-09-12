@@ -2,8 +2,8 @@ import os
 from dataclasses import dataclass
 
 from lib.Config.Config import _Config
-from sqlalchemy.testing.plugin.plugin_base import logging
 
+import logging
 
 @dataclass
 class _ConfigIngestion(_Config):

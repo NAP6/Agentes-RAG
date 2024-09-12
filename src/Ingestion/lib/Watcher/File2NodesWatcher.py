@@ -50,7 +50,7 @@ class File2NodesWatcher(BaseWatcher):
             logger.info('Ejecutando el pipeline de ingestión')
             nodes = self._ingestion_pipeline.run(documents=nodes)
 
-        output_file_path = os.path.join(self._nodes_output_directory, f'{file_name}.pk')
+        output_file_path = os.path.join(self._nodes_output_directory, f'{file_name}.pkl')
         with open(output_file_path, 'wb') as file:
             pickle.dump(nodes, file)
         logger.info(f'Nodos guardados en: {output_file_path}')

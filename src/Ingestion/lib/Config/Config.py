@@ -172,6 +172,3 @@ class _Config:
 
         return logger
 
-
-# Configuracion
-Config = _Config()
